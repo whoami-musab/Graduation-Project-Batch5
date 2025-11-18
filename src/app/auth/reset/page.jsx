@@ -1,8 +1,9 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
-import Link from 'next/link';
 import { FaUserAlt } from "react-icons/fa";
 import Swal from 'sweetalert2';
+
 
 function Login() {
 
@@ -10,6 +11,7 @@ function Login() {
     const myBorderColor = '#d4145a';
 
     const [username, setUsername] = useState('');
+    const router = useRouter()
 
     const handleReset = (e) => {
         e.preventDefault();
@@ -72,6 +74,9 @@ function Login() {
                     </button>
                 </form>
             </div>
+            <button onClick={()=> router.back()} className="text-[#d4145a] cursor-pointer mt-4 block text-center hover:underline text-2xl">
+                Back to Login
+            </button>
         </div>
     )
 }
