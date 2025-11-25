@@ -106,7 +106,7 @@ function Login() {
                                 value={password}
                                 onChange={e=>setPassword(e.target.value)}
                                 placeholder="Password"
-                                className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-full shadow-sm focus:outline-none`}
+                                className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-tr-full rounded-br-full shadow-sm focus:outline-none`}
                             />
                         </div>
                     </div>
