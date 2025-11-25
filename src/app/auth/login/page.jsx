@@ -1,8 +1,11 @@
 'use client';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link';
 import { FaUserAlt } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import { FaRegUser } from "react-icons/fa";
+import { RiLockPasswordLine } from "react-icons/ri";
+
 
 function Login() {
 
@@ -11,6 +14,12 @@ function Login() {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+
+    useEffect(() => {
+        setTimeout(() => {
+            document.getElementById('username').focus();
+        }, 3000);
+    }, []);
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -58,7 +67,7 @@ function Login() {
             }}
         >
             <div
-                className={`bg-linear-to-r from-[#d4145a] via-gray-800 to-gray-900 relative p-8 rounded-3xl shadow-lg max-w-md w-full border-l-2 border-b-1 border-[#d4145a]`}
+                className={`bg-linear-to-r from-[#d4145a] via-gray-800 to-gray-900 relative p-8 rounded-3xl shadow-lg max-w-md w-full border-l-2 border-b border-[#d4145a]`}
                 style={{
                     "--tw-gradient-from-position": "-90%",
                     "--tw-gradient-via-position": "50%",
@@ -71,25 +80,35 @@ function Login() {
                 <form className="flex flex-col space-y-4">
                     <div>
                         <label htmlFor="username" className="ml-5 block text-lg text-white font-semibold">Username</label>
-                        <input
-                            type="text"
-                            id="username"
-                            value={username}
-                            onChange={e=>setUsername(e.target.value)}
-                            placeholder="Username or Email"
-                            className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-full shadow-sm focus:outline-none`}
-                        />
+                        <div className='flex gap-2 rounded-full items-center bg-white mt-1 shadow-sm'>
+                            <div>
+                                <FaRegUser className='text-[#d4145a] text-2xl ml-4'/>
+                            </div>
+                            <input
+                                type="text"
+                                id="username"
+                                value={username}
+                                onChange={e=>setUsername(e.target.value)}
+                                placeholder="Username or Email"
+                                className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-tr-full rounded-br-full shadow-sm focus:outline-none`}
+                                />
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="email" className="ml-5 block text-lg text-white font-semibold">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={e=>setPassword(e.target.value)}
-                            placeholder="Password"
-                            className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-full shadow-sm focus:outline-none`}
-                        />
+                        <div className='flex gap-2 rounded-full items-center bg-white mt-1 shadow-sm'>
+                            <div>
+                                <RiLockPasswordLine className='text-[#d4145a] text-2xl ml-4'/>
+                            </div>
+                            <input
+                                type="password"
+                                id="password"
+                                value={password}
+                                onChange={e=>setPassword(e.target.value)}
+                                placeholder="Password"
+                                className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-full shadow-sm focus:outline-none`}
+                            />
+                        </div>
                     </div>
                     <button 
                         onClick={e=> handleLogin(e)} 

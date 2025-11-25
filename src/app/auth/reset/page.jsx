@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaUserAlt } from "react-icons/fa";
 import Swal from 'sweetalert2';
 
@@ -12,6 +12,12 @@ function Login() {
 
     const [username, setUsername] = useState('');
     const router = useRouter()
+
+    useEffect(() => {
+        setTimeout(() => {
+            document.getElementById('username').focus();
+        }, 3000);
+    }, []);
 
     const handleReset = (e) => {
         e.preventDefault();
