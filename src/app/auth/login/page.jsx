@@ -117,7 +117,7 @@ function Login() {
                         </div>
                         <button
                             onClick={e => handleLogin(e)}
-                            className="bg-[#d4145a] cursor-pointer text-white py-2 rounded-full text-lg font-semibold hover:bg-pink-700 transition duration-300 w-1/3 self-center block mt-4"
+                            className="bg-[#d4145a] cursor-pointer text-white py-2 rounded-full text-lg font-semibold hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 transition duration-300 w-1/3 self-center block mt-4"
                         >
                             Login
                         </button>

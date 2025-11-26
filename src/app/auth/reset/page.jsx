@@ -74,7 +74,7 @@ function Login() {
                     </div>
                     <button 
                         onClick={e=> handleReset(e)} 
-                        className="bg-[#d4145a] cursor-pointer text-white py-3 rounded-full text-lg font-semibold hover:bg-pink-700 transition duration-300 w-1/2 self-center block mt-4"
+                        className="bg-[#d4145a] cursor-pointer text-white py-3 rounded-full text-lg font-semibold hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 transition-colors w-1/2 self-center block mt-4"
                     >
                         Reset
                     </button>
