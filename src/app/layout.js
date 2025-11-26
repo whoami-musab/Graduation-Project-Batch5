@@ -1,3 +1,7 @@
+import React from "react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import StateProvider from "../stateManagement/StateProvider";
 import "./globals.css";
 
 export const metadata = {
@@ -8,10 +12,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={``}
-      >
-        {children}
+      <body>
+        <StateProvider>
+          <div className="flex flex-col justify-between">
+          <Header />
+            {children}
+          <Footer />
+          </div>
+        </StateProvider>
       </body>
     </html>
   );
