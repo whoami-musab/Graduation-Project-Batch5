@@ -21,10 +21,10 @@ function Dashboard() {
         >
             {/* ====================================================================== */}
             {/* ========== Dashboard Content & Links ========== */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 w-full md:w-fit mx-auto md:m-auto bg-black bg-opacity-50 p-10 rounded">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 w-full sm:h-fit sm:m-auto md:h-fit md:w-fit mx-auto md:m-auto bg-black bg-opacity-50 p-10 rounded">
                 <Link
-                    href="/profile"
-                    className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64`}
+                    href="dashboard/profile"
+                    className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64 sm:h-fit hover:shadow-lg hover:shadow-[#d4145a] transition-all `}
                     style={{ borderColor: myBorderColor }}
                 >
                     <FaUser className='text-5xl' />
@@ -39,7 +39,7 @@ function Dashboard() {
                 </Link>
                 <Link
                     href="/dashboard/exams"
-                    className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64`}
+                    className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64 sm:h-fit hover:shadow-lg hover:shadow-[#d4145a] transition-all `}
                     style={{ borderColor: myBorderColor }}
                 >
                     <FaFile className='text-5xl' />
@@ -54,7 +54,7 @@ function Dashboard() {
                 </Link>
                 <Link
                     href="/dashboard/manage"
-                    className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64`}
+                    className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64 sm:h-fit hover:shadow-lg hover:shadow-[#d4145a] transition-all `}
                     style={{ borderColor: myBorderColor }}
                 >
                     <CiBoxList className='text-5xl' />
