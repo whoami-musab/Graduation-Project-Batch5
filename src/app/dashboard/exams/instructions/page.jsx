@@ -27,9 +27,10 @@ function ExamInstructions() {
                     <p>1. Make sure you have a stable internet connection throughout the test.</p>
                     <p>2. Do not refresh the page or navigate away during the test.</p>
                     <p>3. Each question must be answered within the allotted time.</p>
-                    {/* <p>4. .</p> */}
-                    <p>5. Once you submit your answers, you cannot change them.</p>
-                    <p>6. If you encounter any technical issues, contact support immediately.</p>
+                    <p>4. Exam time is just 10 minutes.</p>
+                    <p>5. Be careful before submitting your answer.</p>
+                    <p>6. Once you submit your answers, you cannot change them.</p>
+                    <p>7. If you encounter any technical issues, contact support immediately.</p>
                 </div>
                 <div className='flex items-center gap-4'>
                     <input
