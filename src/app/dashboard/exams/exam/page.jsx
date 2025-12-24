@@ -1,0 +1,162 @@
+'use client';
+import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
+import { make_exam, startExam, saveAnswer, previousQuestion, nextQuestion } from '../../../../stateManagement/examSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import Loading from '../../../Loading';
+import { TiStopwatch } from "react-icons/ti";
+// import { whistle } from '../../../../scripts/scripts';
+
+
+function MakeExam() {
+    const examdate = new Date().toLocaleDateString()
+    const [timer, setTimer] = useState('00:00');
+    const bgImageUrl = '/imgs/login.png'; // Example background image URL
+    const [examID, setExamID] = useState(0);
+    const [examDate, setExamDate] = useState(examdate);
+    const [stdAnswer, setStdAnswer] = useState([]);
+    const router = useRouter();
+    const dispatch = useDispatch();
+    const intervalRef = React.useRef(null);
+
+    const { questions, currentIndex, studentAnswer, started, loading } = useSelector((state) => state.exam);
+    const question = questions ? questions[currentIndex] : null;
+    const parts = question ? question.question.split('___') : [];
+    const [isTimeUp, setIsTimeUp] = useState(false);
+
+    useEffect(() => {
+        if (!loading && questions.length === 0) {
+            router.replace('/dashboard/exams/instructions');
+        }
+    }, [questions, loading, router]);
+    useEffect(() => {
+        let counter;
+        if (started) {
+            const whistle = new Audio('/sounds/whistle.mp3');
+            whistle.play().catch(() => { console.log('User interaction to play audio') })
+            let totalSec = 0;
+            intervalRef.current = setInterval(() => {
+                totalSec += 1;
+                const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+                const sec = String(totalSec % 60).padStart(2, '0');
+                setTimer(`${min}:${sec}`);
+                if (totalSec === 10) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Time is up!',
+                        text: 'Your exam time has ended. Submitting your answers.',
+                        confirmButtonText: 'OK'
+                    });
+                    clearInterval(intervalRef.current);
+                    setIsTimeUp(true);
+                }
+            }, 1000);
+        }
+        return () => clearInterval(intervalRef.current);
+    }, [started]);
+
+    if (loading) {
+        return <Loading />;
+    }
+
+    if (!loading && !started) {
+        return (
+            <div
+                className='flex min-h-screen text-white w-full'
+                style={{
+                    backgroundImage: `url(${bgImageUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
+                <div
+                    className='flex flex-col w-full md:w-[700px] mx-auto sm:m-auto text-3xl md:rounded-4xl bg-black bg-opacity-50 p-10 border-t border-t-gray-600 border-r-2 border-r-gray-600 border-l-2 border-l-[#d4145a] border-b border-b-[#d4145a] gap-10'
+                >
+                    <h1 className='text-4xl font-bold'>Ready to start the test?</h1>
+                    <button className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
+                        onClick={() => { dispatch(startExam()); dispatch(make_exam()) }}
+                    >
+                        Start the test
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div
+            className='flex min-h-screen text-white w-full'
+            style={{
+                backgroundImage: `url(${bgImageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            }}
+        >
+            <div
+                className='flex flex-col min-h-[300px] w-full md:w-[850px] mx-auto sm:m-auto md:rounded-4xl bg-black bg-opacity-50 p-10 border-t border-t-gray-600 border-r-2 border-r-gray-600 border-l-2 border-l-[#d4145a] border-b border-b-[#d4145a] gap-10'
+            >
+                <div className='flex items-center justify-between gap-6 text-2xl border-b-2 border-[#d4145a] pb-4'>
+                    <p>{question?.type}</p>
+                    <p className='flex items-center gap-1.5'>Time: {timer} <TiStopwatch /></p>
+                </div>
+                <div className='flex gap-6'>
+                    {
+                        question &&
+                        <h1 className='text-2xl font-bold w-full'>
+                            {parts[0]}
+                            <input
+                                type="text"
+                                value={studentAnswer[currentIndex] || ''}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        dispatch(nextQuestion());
+                                    }
+                                }}
+                                onChange={
+                                    (e) => {
+                                        const value = e.target.value.replace(/[,."<>;-_$^&*()-=+@!~`\s]/g, '');
+                                        dispatch(saveAnswer({ index: currentIndex, answer: value }))
+                                    }
+                                }
+                                className='bg-gray-200 text-[#d4145a] rounded-md px-2 m-1 py-1 mx-2 w-48 focus:border focus:border-[#d4145a] focus:outline-none font-bold'
+                            />
+                            {parts[1]}
+                        </h1>
+                    }
+                </div>
+                <div className='flex flex-col items-start justify-center gap-4 w-full mt-6'>
+                    <div className='flex items-center justify-around gap-3 w-full'>
+                        <button
+                            disabled={isTimeUp}
+                            onClick={() => dispatch(previousQuestion())}
+                            className='bg-gray-600 hover:bg-gray-800 text-white py-2 px-2 text-md rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
+                        >
+                            Prev
+                        </button>
+                        {
+                            currentIndex === questions.length - 1 ?
+                                <button
+                                    onClick={() => dispatch(nextQuestion())}
+                                    className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 text-md rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
+                                >
+                                    Submit
+                                </button>
+                                :
+                                <button
+                                    disabled={isTimeUp}
+                                    className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 text-md rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
+                                    onClick={() => dispatch(nextQuestion())}
+                                >
+                                    Next
+                                </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default MakeExam

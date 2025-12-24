@@ -6,6 +6,8 @@ import Swal from 'sweetalert2';
 import { FaRegUser } from "react-icons/fa";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useRouter } from 'next/navigation';
+import { login } from '../../../stateManagement/authSlice'
+import { useSelector, useDispatch } from 'react-redux';
 
 
 function Login() {
@@ -14,14 +16,25 @@ function Login() {
     const myBorderColor = '#d4145a';
     const router = useRouter();
 
+    const { isAuthenticated } = useSelector((state) => state.auth);
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push('/dashboard');
+            return
+        }
+    }, [isAuthenticated, router]);
 
     useEffect(() => {
         setTimeout(() => {
-            document.getElementById('username').focus();
-        }, 3000);
+            document.getElementById('username')?.focus();
+        }, 300);
     }, []);
+
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -34,7 +47,7 @@ function Login() {
             });
         }
 
-        if (/[',', '-', '/', '~', '.', ';']/.test(username)) {
+        if (/[',', '/', '~', ';']/.test(username.toLowerCase())) {
             return Swal.fire({
                 icon: 'error',
                 title: 'Username cannot contain special characters. Only letters, numbers, underscore "_" are allowed.',
@@ -42,15 +55,16 @@ function Login() {
             })
         }
 
-        if (username.toLowerCase() === 'admin' && password === 'password') {
+        if (username.toLowerCase().trim() === 'admin' && password === 'password') {
             Swal.fire({
                 icon: 'success',
                 title: 'Login successful!',
                 confirmButtonColor: '#d4145a'
             });
+            dispatch(login({ username, password }));
             setUsername('');
             setPassword('');
-            router.push('/'); // Redirect to dashboard or another page
+            // router.push('/dashboard'); // Redirect to dashboard or another page
         } else {
             return Swal.fire({
                 icon: 'error',
@@ -82,7 +96,10 @@ function Login() {
                     <div className={`flex flex-col items-center justify-center rounded-full absolute bg-gray-700 w-20 h-20 border-2 border-[${myBorderColor}] -top-12 left-1/2 transform -translate-x-1/2`}>
                         <FaUserAlt className="text-white text-4xl" />
                     </div>
-                    <form className="flex flex-col space-y-4">
+                    <form
+                        onSubmit={handleLogin}
+                        className="flex flex-col space-y-4"
+                    >
                         <div>
                             <label htmlFor="username" className="ml-5 block text-lg text-white font-semibold">Username</label>
                             <div className='flex gap-2 rounded-full items-center bg-white mt-1 shadow-sm'>
@@ -96,6 +113,7 @@ function Login() {
                                     onChange={e => setUsername(e.target.value)}
                                     placeholder="Username or Email"
                                     className={`mt-1 block w-full px-4 py-3 bg-white text-xl text-[#d4145a] rounded-tr-full rounded-br-full shadow-sm focus:outline-none`}
+                                    autoComplete="username"
                                 />
                             </div>
                         </div>
@@ -116,7 +134,7 @@ function Login() {
                             </div>
                         </div>
                         <button
-                            onClick={e => handleLogin(e)}
+                            type='submit'
                             className="bg-[#d4145a] cursor-pointer text-white py-2 rounded-full text-lg font-semibold hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 transition duration-300 w-1/3 self-center block mt-4"
                         >
                             Login

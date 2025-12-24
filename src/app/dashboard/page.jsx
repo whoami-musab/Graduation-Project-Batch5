@@ -17,7 +17,6 @@ function Dashboard() {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
             }}
-
         >
             {/* ====================================================================== */}
             {/* ========== Dashboard Content & Links ========== */}
@@ -27,7 +26,7 @@ function Dashboard() {
                     className={`border-4 p-6 rounded-lg flex flex-col items-start justify-center gap-5 min-w-64 sm:h-fit hover:shadow-lg hover:shadow-[#d4145a] transition-all `}
                     style={{ borderColor: myBorderColor }}
                 >
-                    <FaUser className='text-5xl' />
+                    <FaUser className={`text-5xl`} />
                     <div className='flex flex-col'>
                         <p className="text-3xl font-bold mb-4 flex items-center">
                             Profile
@@ -48,7 +47,7 @@ function Dashboard() {
                             Exam
                         </p>
                         <span>
-                            All your Exam Data
+                            All your exam Data
                         </span>
                     </div>
                 </Link>

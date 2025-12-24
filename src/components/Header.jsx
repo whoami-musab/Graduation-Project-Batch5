@@ -2,10 +2,12 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation';
+import { useSelector } from 'react-redux';
 
 function Header() {
     const pathname = usePathname()
     const isLoginPage = pathname === '/auth/login' || pathname === '/auth/register';
+    const { isAuthenticated } = useSelector((state) => state.auth);
     if (isLoginPage) {
         return null; // Do not render the header on the login page
     }
@@ -17,7 +19,7 @@ function Header() {
         </div>
         {
             pathname === '/' 
-            ? <Link href="/auth/login" className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 py-2 px-4 rounded text-white transition-colors mr-1'>Get started</Link>
+            ? isAuthenticated ? <Link href="/dashboard" className='px-5 text-white'>Dashboard</Link> : <Link href="/auth/login" className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 py-2 px-4 rounded text-white transition-colors mr-1'>Get started</Link>
             : <Link href="/" className='px-5 text-white'>Home</Link>
         }
     </div>
