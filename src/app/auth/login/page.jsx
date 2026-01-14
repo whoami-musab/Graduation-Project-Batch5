@@ -55,23 +55,26 @@ function Login() {
             })
         }
 
-        if (username.toLowerCase().trim() === 'admin' && password === 'password') {
+        dispatch(login({ username, password }))
+        .unwrap()
+        .then(() => {
             Swal.fire({
                 icon: 'success',
                 title: 'Login successful!',
                 confirmButtonColor: '#d4145a'
             });
-            dispatch(login({ username, password }));
+            router.push('/dashboard');
             setUsername('');
             setPassword('');
-            // router.push('/dashboard'); // Redirect to dashboard or another page
-        } else {
-            return Swal.fire({
+        })
+        .catch((error) => {
+            Swal.fire({
                 icon: 'error',
-                title: 'Invalid username or password.',
+                title: 'Login failed!',
+                text: error,
                 confirmButtonColor: '#d4145a'
-            })
-        }
+            });
+        });
     }
 
     return (

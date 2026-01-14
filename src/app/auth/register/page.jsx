@@ -3,6 +3,8 @@ import React, { useState } from 'react'
 import Link from 'next/link';
 import { FaUserAlt } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import { useDispatch, useSelector } from 'react-redux';
+import { register } from '../../../stateManagement/authSlice';
 
 function Login() {
 
@@ -17,6 +19,9 @@ function Login() {
     const [re_password, setRe_Password] = useState('');
     const [firstName, setFirstName] = useState('');
     const [terms, setTerms] = useState(false);
+
+    const {registered} = useSelector(state=>state.auth)
+    const dispatch = useDispatch()
 
     const handleRegister = (e) => {
         e.preventDefault();
@@ -45,6 +50,7 @@ function Login() {
                 confirmButtonColor: bgColor
             })
         }
+        dispatch(register({username, password, firstName, lastName, email, phone}))
     }
 
     return (

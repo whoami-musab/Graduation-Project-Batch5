@@ -1,16 +1,29 @@
 'use client';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaUserAlt } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
+import Loading from '../../Loading';
+import { useDispatch, useSelector } from 'react-redux';
+import { get_exams } from '../../../stateManagement/examSlice';
 
-function Profile() {
-    const examdate = new Date().toLocaleDateString()
+function Exams() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
-    const [examID, setExamID] = useState(0);
-    const [examDate, setExamDate] = useState(examdate);
     const router = useRouter();
 
-    if (examID === 0 || examDate === null) {
+    const dispatch = useDispatch()
+    const { oldExams, loading } = useSelector((state) => state.exam);
+
+    useEffect(() => {
+        dispatch(get_exams());
+    }, [dispatch]);
+
+    if (loading) {
+        return <Loading />;
+    }
+
+    const exams = oldExams?.exams || [];
+
+    if (exams.length === 0) {
         return (
             <div
                 className='flex min-h-screen text-white w-full'
@@ -32,6 +45,7 @@ function Profile() {
             </div>
         )
     }
+
     return (
         <div
             className='flex min-h-screen text-white w-full'
@@ -54,9 +68,34 @@ function Profile() {
                     </div>
                 </div>
                 <div className='flex flex-col items-start justify-center gap-4 w-full mt-6'>
-                    <div className='flex flex-col gap-3'>
-                        <span className='text-3xl text-[#d4145a] font-bold'>Exam - {examID}</span>
-                        <span className='text-xl font-semibold'>{examDate}</span>
+                    <button className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 text-sm rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
+                        onClick={() => router.push('/dashboard/exams/instructions')}>
+                        Try new test
+                    </button>
+                    {/* ============ Exam data ============ */}
+                    <div className='flex flex-col gap-3 w-full'>
+                        {
+                            exams.map((exam, index) => {
+
+                                const dt = exam?.createdAt ? new Date(exam?.createdAt) : null;
+                                const examDate = dt && !isNaN(dt.getTime()) ? dt.toLocaleString() : 'N/A';
+
+                                const startTime = exam?.startTime ? new Date(exam?.startTime) : null;
+                                const formattedStartTime = startTime && !isNaN(startTime.getTime()) ? startTime.toLocaleTimeString() : 'N/A';
+
+                                const endTime = exam?.endTime ? new Date(exam?.endTime) : null;
+                                const formattedEndTime = endTime && !isNaN(endTime.getTime()) ? endTime.toLocaleTimeString() : 'N/A';
+
+                                return (
+                                    <div key={exam._id} className='flex flex-col gap-2 border-b border-gray-600 pb-2'>
+                                        <span className='text-3xl text-[#d4145a] font-bold'>Exam - No {index + 1}</span>
+                                        <span className='text-xl font-semibold'>Exam Date: {examDate}</span>
+                                        <span className='text-xl font-semibold'>Start Time: {formattedStartTime} - End Time: {formattedEndTime}</span>
+                                        <span className='text-xl font-bold'>Level: <span className='text-[#d4145a]'>{exam?.level}</span></span>
+                                    </div>
+                                )
+                            })
+                        }
                     </div>
                 </div>
             </div>
@@ -64,4 +103,4 @@ function Profile() {
     )
 }
 
-export default Profile
+export default Exams

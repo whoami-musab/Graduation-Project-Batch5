@@ -8,7 +8,7 @@ function NotFound() {
 
     const router = useRouter()
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
-        useEffect(() => {
+    useEffect(() => {
         document.addEventListener('contextmenu', (e)=>{e.preventDefault()});
         
         return () => {

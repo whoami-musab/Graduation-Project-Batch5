@@ -1,21 +1,16 @@
 'use client';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
-import { make_exam, startExam, saveAnswer, previousQuestion, nextQuestion } from '../../../../stateManagement/examSlice';
+import { save_exam, saveAnswer, previousQuestion, nextQuestion, submit_exam, resetExam } from '../../../../stateManagement/examSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loading from '../../../Loading';
 import { TiStopwatch } from "react-icons/ti";
-// import { whistle } from '../../../../scripts/scripts';
 
 
 function MakeExam() {
-    const examdate = new Date().toLocaleDateString()
     const [timer, setTimer] = useState('00:00');
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
-    const [examID, setExamID] = useState(0);
-    const [examDate, setExamDate] = useState(examdate);
-    const [stdAnswer, setStdAnswer] = useState([]);
     const router = useRouter();
     const dispatch = useDispatch();
     const intervalRef = React.useRef(null);
@@ -24,64 +19,76 @@ function MakeExam() {
     const question = questions ? questions[currentIndex] : null;
     const parts = question ? question.question.split('___') : [];
     const [isTimeUp, setIsTimeUp] = useState(false);
+    const submittedRef = useRef(false);
 
     useEffect(() => {
-        if (!loading && questions.length === 0) {
+        if (!loading && started && questions.length === 0) {
             router.replace('/dashboard/exams/instructions');
         }
-    }, [questions, loading, router]);
-    useEffect(() => {
-        let counter;
-        if (started) {
-            const whistle = new Audio('/sounds/whistle.mp3');
-            whistle.play().catch(() => { console.log('User interaction to play audio') })
-            let totalSec = 0;
-            intervalRef.current = setInterval(() => {
-                totalSec += 1;
-                const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
-                const sec = String(totalSec % 60).padStart(2, '0');
-                setTimer(`${min}:${sec}`);
-                if (totalSec === 10) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Time is up!',
-                        text: 'Your exam time has ended. Submitting your answers.',
-                        confirmButtonText: 'OK'
-                    });
-                    clearInterval(intervalRef.current);
-                    setIsTimeUp(true);
-                }
-            }, 1000);
+    }, [questions, loading, started, router]);
+
+    // ==================== Submit Exam Handler =======================
+    const handleSubmit = useCallback(async () => {
+        try {
+            if (submittedRef.current) return;
+            submittedRef.current = true;
+
+            const examResult = await dispatch(submit_exam()).unwrap();
+            await dispatch(save_exam(examResult)).unwrap();
+            Swal.fire({
+                icon: 'success',
+                title: 'Exam Submitted',
+                text: 'Your exam has been submitted successfully.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                dispatch(resetExam());
+                router.push('/dashboard');
+            });
+
+        } catch (error) {
+            submittedRef.current = false;
+            console.error('Error submitting exam:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Submission Error',
+                text: String(error) || 'There was an error submitting your exam. Please try again.',
+                confirmButtonText: 'OK'
+            });
+            return;
         }
+    }, [dispatch, router]);
+
+    useEffect(() => {
+        if (!started) return;
+        const whistle = new Audio('/sounds/whistle.mp3');
+        whistle.play().catch(() => { console.log('User interaction to play audio') })
+
+        let totalSec = 0;
+        intervalRef.current = setInterval(() => {
+            totalSec += 1;
+
+            const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
+            const sec = String(totalSec % 60).padStart(2, '0');
+            setTimer(`${min}:${sec}`);
+            // ------------------------------- Stop exam at 10 minutes -------------------------------
+            if (min === '00' && sec === '20') {
+                clearInterval(intervalRef.current);
+                setIsTimeUp(true);
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Time is up!',
+                    text: 'Your exam time has ended. Submitting your answers.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    handleSubmit()
+                });
+            }
+        }, 1000);
         return () => clearInterval(intervalRef.current);
-    }, [started]);
+    }, [started, handleSubmit]);
 
     if (loading) {
         return <Loading />;
-    }
-
-    if (!loading && !started) {
-        return (
-            <div
-                className='flex min-h-screen text-white w-full'
-                style={{
-                    backgroundImage: `url(${bgImageUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            >
-                <div
-                    className='flex flex-col w-full md:w-[700px] mx-auto sm:m-auto text-3xl md:rounded-4xl bg-black bg-opacity-50 p-10 border-t border-t-gray-600 border-r-2 border-r-gray-600 border-l-2 border-l-[#d4145a] border-b border-b-[#d4145a] gap-10'
-                >
-                    <h1 className='text-4xl font-bold'>Ready to start the test?</h1>
-                    <button className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
-                        onClick={() => { dispatch(startExam()); dispatch(make_exam()) }}
-                    >
-                        Start the test
-                    </button>
-                </div>
-            </div>
-        )
     }
 
     return (
@@ -108,7 +115,9 @@ function MakeExam() {
                             <input
                                 type="text"
                                 value={studentAnswer[currentIndex] || ''}
+                                disabled={isTimeUp}
                                 onKeyDown={(e) => {
+                                    if (isTimeUp) return;
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
                                         dispatch(nextQuestion());
@@ -116,7 +125,7 @@ function MakeExam() {
                                 }}
                                 onChange={
                                     (e) => {
-                                        const value = e.target.value.replace(/[,."<>;-_$^&*()-=+@!~`\s]/g, '');
+                                        const value = e.target.value.replace(/[.,"<>;-_$^&*()-=+@!~`]/g, '');
                                         dispatch(saveAnswer({ index: currentIndex, answer: value }))
                                     }
                                 }
@@ -138,7 +147,8 @@ function MakeExam() {
                         {
                             currentIndex === questions.length - 1 ?
                                 <button
-                                    onClick={() => dispatch(nextQuestion())}
+                                    disabled={isTimeUp}
+                                    onClick={handleSubmit}
                                     className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 text-md rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
                                 >
                                     Submit

@@ -1,8 +1,9 @@
 'use client';
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation';
-import { make_exam, startExam } from './../../../../stateManagement/examSlice';
+import { make_exam, startExam, resetExam } from './../../../../stateManagement/examSlice';
 import { useDispatch } from 'react-redux';
+import Swal from 'sweetalert2';
 
 function ExamInstructions() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
@@ -30,7 +31,7 @@ function ExamInstructions() {
                     <p>4. Exam time is just 10 minutes.</p>
                     <p>5. Be careful before submitting your answer.</p>
                     <p>6. Once you submit your answers, you cannot change them.</p>
-                    <p>7. If you encounter any technical issues, contact support immediately.</p>
+                    <p>7. Good luck.</p>
                 </div>
                 <div className='flex items-center gap-4'>
                     <input
@@ -45,11 +46,20 @@ function ExamInstructions() {
                 <button
                     className={`${agree ? 'bg-[#d4145a]' : 'bg-gray-500'} text-sm hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 text-md rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4`}
                     disabled={!agree}
-                    onClick={() => { 
-                        dispatch(make_exam()).then(() => {
+                    onClick={async () => {
+                        try {
+                            dispatch(resetExam())
+                            await dispatch(make_exam()).unwrap()
                             dispatch(startExam());
                             router.push('/dashboard/exams/exam');
-                        });
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: String(error) || 'Failed to start the exam. Please try again.',
+                                confirmButtonText: 'OK'
+                            });
+                        }
                     }}
                 >
                     I Agree and Continue

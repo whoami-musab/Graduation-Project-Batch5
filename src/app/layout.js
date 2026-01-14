@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import StateProvider from "../stateManagement/StateProvider";
+import dynamic from "next/dynamic";
 import "./globals.css";
 
 export const metadata = {

@@ -1,9 +1,28 @@
 'use client';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { FaUserAlt } from "react-icons/fa";
+import {getUserData} from '../../../stateManagement/authSlice'
+import { useDispatch, useSelector } from 'react-redux';
+import Loading from '../../Loading'
 
 function Profile() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
+    const dispatch = useDispatch();
+    const {userData, loading} = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        const token = sessionStorage.getItem('authToken');
+        if(!userData && token){
+            dispatch(getUserData());
+        }
+    }, [dispatch, userData]);
+
+    const levelDisplay = userData?.level ?? "No exams have been taken";
+
+    if(loading){
+        return <Loading />;
+    }
+
     return (
         <div
             className='flex min-h-screen text-white w-full' style={{
@@ -24,26 +43,30 @@ function Profile() {
                         <span className='text-lg'>Personal Data</span>
                     </div>
                 </div>
-                <div className='grid grid-cols-2 gap-4 w-full mt-6'>
+                <div className='flex flex-col flex-wrap md:grid md:grid-cols-2 gap-4 w-full mt-6'>
                     <div className='flex flex-col gap-3'>
                         <span className='text-3xl text-[#d4145a] font-bold'>Username</span>
-                        <span className='text-xl font-semibold'>john_doe</span>
+                        <span className='text-xl font-semibold'>{userData?.username}</span>
                     </div>
-                    <div className='flex flex-col'>
+                    <div className='flex flex-col flex-wrap'>
                         <span className='text-3xl text-[#d4145a] font-bold'>Email</span>
-                        <span className='text-xl font-semibold'>johndoe@email.com</span>
+                        <span className='text-xl font-semibold'>{userData?.email}</span>
                     </div>
                     <div className='flex flex-col gap-3'>
                         <span className='text-3xl text-[#d4145a] font-bold'>Country</span>
-                        <span className='text-xl font-semibold'>Sudan</span>
+                        <span className='text-xl font-semibold'>{userData?.country === null ? "No country specified" : userData?.country}</span>
                     </div>
                     <div className='flex flex-col'>
                         <span className='text-3xl text-[#d4145a] font-bold'>Level</span>
-                        <span className='text-xl font-semibold'>B2</span>
+                        <span className='text-xl font-semibold'>{levelDisplay}</span>
+                    </div>
+                    <div className='flex flex-col'>
+                        <span className='text-3xl text-[#d4145a] font-bold'>Phone</span>
+                        <span className='text-xl font-semibold'>{userData?.phone}</span>
                     </div>
                     <div className='flex flex-col col-span-2'>
                         <span className='text-3xl text-[#d4145a] font-bold'>Total Exam Count</span>
-                        <span className='text-xl font-semibold'>&lt; 3 &gt;</span>
+                        <span className='text-xl font-semibold'>&lt; {userData?.level === null ? "No exams have been taken" : userData?.level} &gt;</span>
                     </div>
                 </div>
             </div>
