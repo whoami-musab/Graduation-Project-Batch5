@@ -4,24 +4,34 @@ import { FaUserAlt } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import Loading from '../../Loading';
 import { useDispatch, useSelector } from 'react-redux';
-import { get_exams } from '../../../stateManagement/examSlice';
+import { get_exams } from '@/stateManagement/examSlice';
+import Link from 'next/link';
 
 function Exams() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
     const router = useRouter();
 
     const dispatch = useDispatch()
+    const { isAuthenticated, bootstraped } = useSelector(state=>state.auth)
     const { oldExams, loading } = useSelector((state) => state.exam);
 
+    useEffect(()=>{
+        if(bootstraped && !isAuthenticated){
+            router.replace('/auth/login')
+        }
+    }, [router, isAuthenticated, bootstraped])
+
     useEffect(() => {
-        dispatch(get_exams());
-    }, [dispatch]);
+        if(isAuthenticated && bootstraped) dispatch(get_exams());
+    }, [dispatch, isAuthenticated, bootstraped]);
 
-    if (loading) {
-        return <Loading />;
-    }
+    if(!bootstraped) return <Loading />
 
-    const exams = oldExams?.exams || [];
+    if(!isAuthenticated) return <Loading />
+
+    if (loading)  return <Loading />;
+
+    const exams = oldExams || [];
 
     if (exams.length === 0) {
         return (
@@ -36,7 +46,7 @@ function Exams() {
                 <div
                     className='flex flex-col w-full md:w-[700px] mx-auto sm:m-auto text-3xl md:rounded-4xl bg-black bg-opacity-50 p-10 border-t border-t-gray-600 border-r-2 border-r-gray-600 border-l-2 border-l-[#d4145a] border-b border-b-[#d4145a] gap-10'
                 >
-                    <h1 className='text-4xl font-bold'>All exams data will shows here</h1>
+                    <h1 className='text-4xl font-bold'>All exam data will be shown here</h1>
                     <button className='bg-[#d4145a] hover:bg-linear-to-tl hover:from-red-800 hover:to-blue-900 text-white py-2 px-2 text-md rounded-full transition-colors cursor-pointer w-1/2 md:w-1/4'
                         onClick={() => router.push('/dashboard/exams/instructions')}>
                         Try the test
@@ -48,7 +58,7 @@ function Exams() {
 
     return (
         <div
-            className='flex min-h-screen text-white w-full'
+            className='flex min-h-screen text-white w-full py-5'
             style={{
                 backgroundImage: `url(${bgImageUrl})`,
                 backgroundSize: 'cover',
@@ -56,7 +66,7 @@ function Exams() {
             }}
         >
             <div
-                className='flex flex-col w-full md:w-[700px] mx-auto sm:m-auto text-3xl md:rounded-4xl bg-black bg-opacity-50 p-10 border-t border-t-gray-600 border-r-2 border-r-gray-600 border-l-2 border-l-[#d4145a] border-b border-b-[#d4145a] gap-10'
+                className='flex flex-col w-full md:min-w-[700px] md:max-w-[1000px] mx-auto sm:m-auto text-3xl md:rounded-4xl bg-black bg-opacity-50 p-10 border-t border-t-gray-600 border-r-2 border-r-gray-600 border-l-2 border-l-[#d4145a] border-b border-b-[#d4145a] gap-10'
             >
                 <div className='flex gap-6'>
                     <div className='flex items-center justify-center rounded-full bg-white w-20 h-20 border-2 border-[#d4145a]'>
@@ -88,7 +98,7 @@ function Exams() {
 
                                 return (
                                     <div key={exam._id} className='flex flex-col gap-2 border-b border-gray-600 pb-2'>
-                                        <span className='text-3xl text-[#d4145a] font-bold'>Exam - No {index + 1}</span>
+                                        <Link href={`/dashboard/exams/details/${exam._id}`} className='text-3xl text-[#d4145a] font-bold'>Exam - Details</Link>
                                         <span className='text-xl font-semibold'>Exam Date: {examDate}</span>
                                         <span className='text-xl font-semibold'>Start Time: {formattedStartTime} - End Time: {formattedEndTime}</span>
                                         <span className='text-xl font-bold'>Level: <span className='text-[#d4145a]'>{exam?.level}</span></span>

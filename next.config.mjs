@@ -3,6 +3,7 @@ const nextConfig = {
   /* config options here */
   reactCompiler: true,
   allowedDevOrigins: ['*'],
+  poweredByHeader: false
 };
 
 export default nextConfig;

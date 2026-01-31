@@ -1,8 +1,8 @@
 'use client';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation';
 import { make_exam, startExam, resetExam } from './../../../../stateManagement/examSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 
 function ExamInstructions() {
@@ -10,6 +10,15 @@ function ExamInstructions() {
     const [agree, setAgree] = useState(false);
     const router = useRouter();
     const dispatch = useDispatch();
+
+    
+    const {isAuthenticated} = useSelector(state=>state.auth)
+
+    useEffect(()=>{
+        if(!isAuthenticated){
+            router.replace('/auth/login')
+        }
+    }, [router, isAuthenticated])
 
     return (
         <div
@@ -28,7 +37,7 @@ function ExamInstructions() {
                     <p>1. Make sure you have a stable internet connection throughout the test.</p>
                     <p>2. Do not refresh the page or navigate away during the test.</p>
                     <p>3. Each question must be answered within the allotted time.</p>
-                    <p>4. Exam time is just 10 minutes.</p>
+                    <p>4. Exam time is just 20 minutes.</p>
                     <p>5. Be careful before submitting your answer.</p>
                     <p>6. Once you submit your answers, you cannot change them.</p>
                     <p>7. Good luck.</p>

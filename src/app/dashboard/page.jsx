@@ -1,17 +1,38 @@
+'use client'
 import Link from 'next/link';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { FaUser } from "react-icons/fa";
 import { FaFile } from "react-icons/fa";
 import { CiBoxList } from "react-icons/ci";
-
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import Loading from '../Loading'
+import { bootstrapAuth } from '@/stateManagement/authSlice';
 
 
 function Dashboard() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
     const myBorderColor = '#d4145a';
+    const { isAuthenticated, bootstraped, loading } = useSelector(state => state.auth)
+    const router = useRouter()
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            router.replace('/auth/login')
+        }
+    }, [router, isAuthenticated])
+
+    useEffect(() => {
+        if (!bootstraped) dispatch(bootstrapAuth());
+    }, [bootstraped, dispatch]);
+
+    if (loading) {
+        return <Loading />
+    }
 
     return (
-        <div
+        isAuthenticated && <div
             className='flex min-h-screen text-white' style={{
                 backgroundImage: `url(${bgImageUrl})`,
                 backgroundSize: 'cover',

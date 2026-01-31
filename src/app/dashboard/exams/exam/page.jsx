@@ -6,6 +6,7 @@ import { save_exam, saveAnswer, previousQuestion, nextQuestion, submit_exam, res
 import { useDispatch, useSelector } from 'react-redux';
 import Loading from '../../../Loading';
 import { TiStopwatch } from "react-icons/ti";
+import { getUserData } from '@/stateManagement/authSlice';
 
 
 function MakeExam() {
@@ -13,13 +14,21 @@ function MakeExam() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
     const router = useRouter();
     const dispatch = useDispatch();
-    const intervalRef = React.useRef(null);
+    const intervalRef = useRef(null);
 
     const { questions, currentIndex, studentAnswer, started, loading } = useSelector((state) => state.exam);
     const question = questions ? questions[currentIndex] : null;
     const parts = question ? question.question.split('___') : [];
     const [isTimeUp, setIsTimeUp] = useState(false);
     const submittedRef = useRef(false);
+
+    const {isAuthenticated} = useSelector(state=>state.auth)
+
+    useEffect(()=>{
+        if(!isAuthenticated){
+            router.replace('/auth/login')
+        }
+    }, [router, isAuthenticated])
 
     useEffect(() => {
         if (!loading && started && questions.length === 0) {
@@ -35,6 +44,7 @@ function MakeExam() {
 
             const examResult = await dispatch(submit_exam()).unwrap();
             await dispatch(save_exam(examResult)).unwrap();
+            await dispatch(getUserData()).unwrap()
             Swal.fire({
                 icon: 'success',
                 title: 'Exam Submitted',
@@ -70,8 +80,8 @@ function MakeExam() {
             const min = String(Math.floor(totalSec / 60)).padStart(2, '0');
             const sec = String(totalSec % 60).padStart(2, '0');
             setTimer(`${min}:${sec}`);
-            // ------------------------------- Stop exam at 10 minutes -------------------------------
-            if (min === '00' && sec === '20') {
+            // ------------------------------- Stop exam at 20 minutes -------------------------------
+            if (min === '20' && sec === '00') {
                 clearInterval(intervalRef.current);
                 setIsTimeUp(true);
                 Swal.fire({

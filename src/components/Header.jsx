@@ -2,18 +2,42 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { logoutThunk } from '@/stateManagement/authSlice'
+import Swal from 'sweetalert2'
 
 function Header() {
   const pathname = usePathname()
   const isLoginPage = pathname === '/auth/login' || pathname === '/auth/register'
   const { isAuthenticated } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
+
+  const handleLogout = ()=>{
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You should login again if you want to take the test!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Logout!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          dispatch(logoutThunk())
+          Swal.fire({
+            title: "Logged out!",
+            text: "Logged out successfully.",
+            icon: "success"
+          });
+        }
+      });
+  }
 
   if (isLoginPage) return null
 
@@ -23,14 +47,13 @@ function Header() {
         <h1 className='text-white font-bold text-lg p-4'>English level determination system</h1>
         <Link href="/documentation" className='px-5 text-white'>Documentation</Link>
       </div>
-
-      {/* لا تعتمد على auth قبل mounted */}
       {pathname === '/' ? (
         !mounted ? (
-          // Placeholder ثابت عشان السيرفر/الكلاينت يطابقوا
           <span className='px-5 text-white'>...</span>
         ) : isAuthenticated ? (
-          <Link href="/dashboard" className='px-5 text-white'>Dashboard</Link>
+          <div className='felx gap-5 items-center justify-between'>
+            <Link href="/dashboard" className='px-5 text-white'>Dashboard</Link>
+          </div>
         ) : (
           <Link
             href="/auth/login"
@@ -40,7 +63,16 @@ function Header() {
           </Link>
         )
       ) : (
-        <Link href="/" className='px-5 text-white'>Home</Link>
+        <div className='felx gap-5 items-center justify-between'>
+            <Link href="/" className='px-5 text-white'>Home</Link>
+            <Link href="/dashboard" className='px-5 text-white'>Dashboard</Link>
+            <button
+              className='px-5 text-white cursor-pointer'
+              onClick={handleLogout}
+            >
+                Logout
+              </button>
+          </div>
       )}
     </div>
   )

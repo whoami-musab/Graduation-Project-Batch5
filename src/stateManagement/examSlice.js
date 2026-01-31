@@ -1,18 +1,21 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
+const express_url = process.env.NEXT_PUBLIC_BACKEND_EXPRESS_URL
+const fastapi_url = process.env.NEXT_PUBLIC_BACKEND_AI_URL
+
 // ===================== Make Exam =======================
 export const make_exam = createAsyncThunk(
     'exam/makeExam',
     async (_, thunkAPI) => {
         try {
-            const response = await fetch('http://192.168.8.144:8000/make_exam', {
+            const response = await fetch(`${fastapi_url}/make_exam`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'}
             });
             const data = await response.json();
             return data
         } catch (error) {
-            return thunkAPI.rejectWithValue('Failed to make exam');
+            return thunkAPI.rejectWithValue(error?.message || 'Failed to make exam');
         }
     }
 )
@@ -21,10 +24,11 @@ export const make_exam = createAsyncThunk(
 export const submit_exam = createAsyncThunk(
     'exam/submitExam',
     async (_, thunkAPI) => {
+        console.log(fastapi_url)
         try {
             const state = thunkAPI.getState();
             const { questions, studentAnswer } = state.exam;
-            const endTime = new Date().toISOString();
+            // const endTime = new Date().toISOString();
 
             const payload = questions.map((question, index) => ({
                 question: question.question,
@@ -32,9 +36,7 @@ export const submit_exam = createAsyncThunk(
                 type: question.type
             }))
 
-            console.log(payload)
-
-            const response = await fetch('http://192.168.8.144:8000/submit_exam', {
+            const response = await fetch(`${fastapi_url}/submit_exam`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
@@ -42,7 +44,7 @@ export const submit_exam = createAsyncThunk(
             const data = await response.json();
             return data;
         } catch (error) {
-            return thunkAPI.rejectWithValue('Failed to submit exam');
+            return thunkAPI.rejectWithValue(error?.message || 'Failed to submit exam');
         }
     }
 )
@@ -78,7 +80,7 @@ export const save_exam = createAsyncThunk(
                 });
             });
 
-            const res = await fetch('http://192.168.8.144:4000/exam/saveExam', {
+            const res = await fetch(`${express_url}/exam/saveExam`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -94,7 +96,7 @@ export const save_exam = createAsyncThunk(
             return data;
 
         } catch (error) {
-            return thunkAPI.rejectWithValue('Failed to save exam data');
+            return thunkAPI.rejectWithValue(error?.message || 'Failed to save exam data');
         }
     }
 );
@@ -104,10 +106,35 @@ export const get_exams = createAsyncThunk(
     'exam/getExams',
     async (_, thunkAPI) => {
         try {
+            const { token } = thunkAPI.getState().auth;
+            if(!token) return thunkAPI.rejectWithValue('Not authenticated.')
+
+            const response = await fetch(`${express_url}/exam/getExams`, {
+                method: 'GET',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if(!response.ok) return thunkAPI.rejectWithValue(data?.message || 'Failed to get exams')
+
+            return data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error?.message || 'Failed to get exams');
+        }
+    }
+);
+
+// ===================== Get Exam Details =======================
+export const get_exam_details = createAsyncThunk(
+    'exam/getExamDetails',
+    async (examId, thunkAPI) => {
+        try {
             const state = thunkAPI.getState();
             const { token } = state.auth;
 
-            const response = await fetch('http://192.168.8.144:4000/exam/getExams', {
+            const response = await fetch(`${express_url}/exam/getExam/${examId}`, {
                 method: 'GET',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -117,7 +144,7 @@ export const get_exams = createAsyncThunk(
             const data = await response.json();
             return data;
         } catch (error) {
-            return thunkAPI.rejectWithValue('Failed to get exams');
+            return thunkAPI.rejectWithValue(error?.message || 'Failed to get exam details');
         }
     }
 );
@@ -125,6 +152,7 @@ export const get_exams = createAsyncThunk(
 const examSlice = createSlice({
     name: 'exam',
     initialState: {
+        getExamDetails: null,
         oldExams: [],
         examData: null,
         userId: null,
@@ -198,7 +226,7 @@ const examSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // ===================== Submit Exam =======================
+            // ===================== Save Exam =======================
             .addCase(save_exam.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -218,9 +246,22 @@ const examSlice = createSlice({
             })
             .addCase(get_exams.fulfilled, (state, action) => {
                 state.loading = false;
-                state.oldExams = action.payload;
+                state.oldExams = action.payload.exams || [];
             })
             .addCase(get_exams.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            // ===================== Get Exam Details =======================
+            .addCase(get_exam_details.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(get_exam_details.fulfilled, (state, action) => {
+                state.loading = false;
+                state.getExamDetails = action.payload.exam;
+            })
+            .addCase(get_exam_details.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

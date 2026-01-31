@@ -4,11 +4,21 @@ import { FaUserAlt } from "react-icons/fa";
 import {getUserData} from '../../../stateManagement/authSlice'
 import { useDispatch, useSelector } from 'react-redux';
 import Loading from '../../Loading'
+import { useRouter } from 'next/navigation';
 
 function Profile() {
     const bgImageUrl = '/imgs/login.png'; // Example background image URL
     const dispatch = useDispatch();
     const {userData, loading} = useSelector((state) => state.auth);
+    const router = useRouter()
+
+    const {isAuthenticated} = useSelector(state=>state.auth)
+
+    useEffect(()=>{
+        if(!isAuthenticated){
+            router.replace('/auth/login')
+        }
+    }, [router, isAuthenticated])
 
     useEffect(() => {
         const token = sessionStorage.getItem('authToken');
